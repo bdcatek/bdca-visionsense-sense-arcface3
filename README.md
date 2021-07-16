@@ -1,6 +1,6 @@
 
-## 在 64 位的 Linux 系统中安装 32 位的 JDK 环境
-apt-get install libc6-i386 lib32gcc1 lib32stdc++6 lib32z1 lib32ncurses5
+## arcface3 SDK
+依赖虹软人脸识别SDK3.0 linux java
 
 ## java环境
 依赖环境jdk8+
