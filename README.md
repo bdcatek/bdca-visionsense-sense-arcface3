@@ -5,7 +5,7 @@
 ## java环境
 依赖环境jdk8+
 ```
-docker pull openjdk:8-jdk-alpine
+docker pull openjdk:11.0.11-jdk
 ```
 
 ## run.sh
