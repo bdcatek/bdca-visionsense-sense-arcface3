@@ -113,6 +113,7 @@ public class SenseController {
 
 			List<FaceInfo> faceInfoList = faceService.detectFaces(sbs);
 
+			int maxFaceId = -1;
 			// ↓ 在图像上绘制人脸框
 			BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
 			for (FaceInfo face : faceInfoList) {
@@ -132,12 +133,15 @@ public class SenseController {
 				}
 
 				// 绘制FaceId
-				if (face.getFaceId() >= 0) {
-					String s = String.valueOf(face.getFaceId());
+				int faceId = face.getFaceId();
+				if (faceId >= 0) {
+
+					// 更新最新的faceId
+					maxFaceId = maxFaceId < faceId ? faceId : maxFaceId;
+
+					String s = String.valueOf(faceId);
 					// 获取画布的画笔
-
 					Graphics2D g2 = (Graphics2D) image.getGraphics();
-
 					// 开始绘图
 					FontRenderContext context = g2.getFontRenderContext();
 					Font font = new Font("黑体", Font.BOLD, 40);
@@ -198,6 +202,7 @@ public class SenseController {
 			Map<String, Object> result = new HashMap<String, Object>(1);
 			result.put("size", faceInfoListRazor.size());
 			result.put("list", faceInfoListRazor);
+			result.put("faceid", maxFaceId);
 
 			result.put("age", faceService.getAge());
 			result.put("gender", faceService.getGender());
@@ -210,7 +215,7 @@ public class SenseController {
 
 			// BufferedImage image1 = ImageIO.read(new
 			// ByteArrayInputStream(Base64.decodeBase64(sense.getBases64())));
-			ImageIO.write(image, "JPG", new File("image.jpg"));
+			// ImageIO.write(image, "JPG", new File("image.jpg"));
 
 			return sense;
 		} catch (Exception e) {
