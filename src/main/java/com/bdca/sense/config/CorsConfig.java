@@ -1,4 +1,4 @@
-package com.bdca.face.config;
+package com.bdca.sense.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

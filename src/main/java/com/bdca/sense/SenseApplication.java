@@ -1,12 +1,12 @@
-package com.bdca.face;
+package com.bdca.sense;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class FaceApplication {
+public class SenseApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(FaceApplication.class, args);
+		SpringApplication.run(SenseApplication.class, args);
 	}
 }

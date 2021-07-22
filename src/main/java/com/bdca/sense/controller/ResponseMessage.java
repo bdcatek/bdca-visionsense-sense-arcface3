@@ -1,4 +1,4 @@
-package com.bdca.face.controller;
+package com.bdca.sense.controller;
 
 public class ResponseMessage {
 	private String error;

@@ -1,4 +1,4 @@
-package com.bdca.face.entity;
+package com.bdca.sense.entity;
 
 import io.swagger.annotations.ApiModelProperty;
 

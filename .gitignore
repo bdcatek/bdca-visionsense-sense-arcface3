@@ -26,8 +26,7 @@ hs_err_pid*
 .classpath
 .factorypath
 .project
+.springBeans
 .settings/
 
 target/
-
-src/main/resources/static/preschool/

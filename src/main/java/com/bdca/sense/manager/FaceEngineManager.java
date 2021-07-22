@@ -1,4 +1,4 @@
-package com.bdca.face.manager;
+package com.bdca.sense.manager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,10 +24,14 @@ public class FaceEngineManager {
 	// 从官网获取
 	private String appId;
 	private String sdkKey;
-
 	private String libraryPath;
+	private DetectMode detectMode;
 
 	private FaceEngine faceEngine;
+
+	private FaceEngine faceEngineImage;
+
+	private FaceEngine faceEngineVideo;
 
 	private int errorCode = -1;
 
@@ -45,9 +49,9 @@ public class FaceEngineManager {
 			classPath = new File("");
 		}
 
-		faceEngine = new FaceEngine(new File(libraryPath).getAbsolutePath());
 		// 激活引擎
-		errorCode = faceEngine.activeOnline(appId, sdkKey);
+		faceEngineImage = new FaceEngine(new File(libraryPath).getAbsolutePath());
+		errorCode = faceEngineImage.activeOnline(appId, sdkKey);
 
 		if (errorCode != ErrorInfo.MOK.getValue() && errorCode != ErrorInfo.MERR_ASF_ALREADY_ACTIVATED.getValue()) {
 			System.out.println("引擎激活失败: " + errorCode);
@@ -56,7 +60,25 @@ public class FaceEngineManager {
 		}
 
 		ActiveFileInfo activeFileInfo = new ActiveFileInfo();
-		errorCode = faceEngine.getActiveFileInfo(activeFileInfo);
+		errorCode = faceEngineImage.getActiveFileInfo(activeFileInfo);
+		if (errorCode != ErrorInfo.MOK.getValue() && errorCode != ErrorInfo.MERR_ASF_ALREADY_ACTIVATED.getValue()) {
+			System.out.println("获取激活文件信息失败: " + errorCode);
+			// throw new IOException("获取激活文件信息失败: " + errorCode);
+			return;
+		}
+
+		// 激活引擎
+		faceEngineVideo = new FaceEngine(new File(libraryPath).getAbsolutePath());
+		errorCode = faceEngineVideo.activeOnline(appId, sdkKey);
+
+		if (errorCode != ErrorInfo.MOK.getValue() && errorCode != ErrorInfo.MERR_ASF_ALREADY_ACTIVATED.getValue()) {
+			System.out.println("引擎激活失败: " + errorCode);
+			// throw new IOException("引擎激活失败: " + errorCode);
+			return;
+		}
+
+		activeFileInfo = new ActiveFileInfo();
+		errorCode = faceEngineVideo.getActiveFileInfo(activeFileInfo);
 		if (errorCode != ErrorInfo.MOK.getValue() && errorCode != ErrorInfo.MERR_ASF_ALREADY_ACTIVATED.getValue()) {
 			System.out.println("获取激活文件信息失败: " + errorCode);
 			// throw new IOException("获取激活文件信息失败: " + errorCode);
@@ -65,10 +87,8 @@ public class FaceEngineManager {
 
 		// 引擎配置
 		EngineConfiguration engineConfiguration = new EngineConfiguration();
-		engineConfiguration.setDetectMode(DetectMode.ASF_DETECT_MODE_IMAGE);
 		engineConfiguration.setDetectFaceOrientPriority(DetectOrient.ASF_OP_ALL_OUT);
-		engineConfiguration.setDetectFaceMaxNum(50);
-		engineConfiguration.setDetectFaceScaleVal(16);
+		engineConfiguration.setDetectFaceMaxNum(10);
 		// 功能配置
 		FunctionConfiguration functionConfiguration = new FunctionConfiguration();
 		functionConfiguration.setSupportAge(true);
@@ -81,7 +101,18 @@ public class FaceEngineManager {
 		engineConfiguration.setFunctionConfiguration(functionConfiguration);
 
 		// 初始化引擎
-		errorCode = faceEngine.init(engineConfiguration);
+		engineConfiguration.setDetectMode(DetectMode.ASF_DETECT_MODE_IMAGE);
+		errorCode = faceEngineImage.init(engineConfiguration);
+
+		if (errorCode != ErrorInfo.MOK.getValue()) {
+			System.out.println("初始化引擎失败: " + errorCode);
+			// throw new IOException("初始化引擎失败: " + errorCode);
+			return;
+		}
+
+		// 初始化引擎
+		engineConfiguration.setDetectMode(DetectMode.ASF_DETECT_MODE_VIDEO);
+		errorCode = faceEngineVideo.init(engineConfiguration);
 
 		if (errorCode != ErrorInfo.MOK.getValue()) {
 			System.out.println("初始化引擎失败: " + errorCode);
@@ -91,7 +122,19 @@ public class FaceEngineManager {
 	}
 
 	public FaceEngine getFaceEngine() {
-		return faceEngine;
+		return faceEngine == null ? faceEngineImage : faceEngine;
+	}
+
+	public FaceEngine setFaceEngine(FaceEngine engine) {
+		return faceEngine = engine;
+	}
+
+	public FaceEngine getFaceEngineImage() {
+		return faceEngineImage;
+	}
+
+	public FaceEngine getFaceEngineVideo() {
+		return faceEngineVideo;
 	}
 
 	public String getAppId() {
@@ -116,6 +159,14 @@ public class FaceEngineManager {
 
 	public void setLibraryPath(String libraryPath) {
 		this.libraryPath = libraryPath;
+	}
+
+	public DetectMode getDetectMode() {
+		return detectMode;
+	}
+
+	public void setDetectMode(DetectMode detectMode) {
+		this.detectMode = detectMode;
 	}
 
 	public int getErrorCode() {

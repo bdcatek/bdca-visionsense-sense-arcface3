@@ -1,7 +1,8 @@
-package com.bdca.face.config;
+package com.bdca.sense.config;
 
 import java.util.HashSet;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,8 +25,8 @@ public class SwaggerConfig {
 	// @Value("${version}")
 	private String version = "1.0";
 
-	// @Value("${host}")
-	// private String host;
+	@Value("${spring.application.name:数据服务}")
+	private String title;
 
 	public static final HashSet<String> consumes = new HashSet<String>() {
 		{
@@ -45,7 +46,7 @@ public class SwaggerConfig {
 	}
 
 	private ApiInfo apiInfo() {
-		return new ApiInfoBuilder().title("数据服务").description("API接口").version(version)
+		return new ApiInfoBuilder().title(title).description("API接口").version(version)
 				.termsOfServiceUrl("http://127.0.0.1:8080").build();
 	}
 }

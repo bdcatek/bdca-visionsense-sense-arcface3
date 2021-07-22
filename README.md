@@ -46,10 +46,10 @@ API接口http://localhost:50000/swagger-ui.html
 感知服务
 
 #### 业务参数
-* bases64: 图像Base64字符串  
-* boxes: （可选）自定义识别范围框  
-* inclusive: （可选）自定义识别范围和识别结果目标的匹配是否要求全包含：false-相交关系（默认值）；true-包含关系；  
-* options: （可选）其他自定义参数和值   
+* bases64: 图像Base64字符串
+* boxes: （可选）自定义识别范围框
+* inclusive: （可选）自定义识别范围和识别结果目标的匹配是否要求全包含：false-相交关系（默认值）；true-包含关系；
+* options: （可选）其他自定义参数和值;mode=VIDEO/IMAGE
 
 ```
 {
@@ -63,7 +63,9 @@ API接口http://localhost:50000/swagger-ui.html
     }
   ],
   "inclusive": false,
-  "options": {}
+  "options": {
+    "mode": "VIDEO"
+  }
 }
 ```
 
@@ -89,7 +91,7 @@ API接口http://localhost:50000/swagger-ui.html
 * bases64: 图像Base64字符串
 * boxes: （可选）自定义识别范围框
 * inclusive: （可选）自定义识别范围和识别结果目标的匹配是否要求全包含：false-相交关系（默认值）；true-包含关系；
-* options: （可选）其他自定义参数和值
+* options: （可选）其他自定义参数和值;mode=VIDEO/IMAGE
 
 ```
 {
@@ -103,7 +105,9 @@ API接口http://localhost:50000/swagger-ui.html
     }
   ],
   "inclusive": false,
-  "options": {}
+  "options": {
+    "mode": "VIDEO"
+  }
 }
 ```
 

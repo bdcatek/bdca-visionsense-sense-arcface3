@@ -1,13 +1,16 @@
-package com.bdca.face.controller;
+package com.bdca.sense.controller;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,10 +36,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.arcsoft.face.FaceInfo;
 import com.arcsoft.face.enums.ErrorInfo;
-import com.bdca.face.entity.Rect;
-import com.bdca.face.entity.SenseDTO;
-import com.bdca.face.manager.FaceEngineManager;
-import com.bdca.face.service.FaceService;
+import com.bdca.sense.entity.Rect;
+import com.bdca.sense.entity.SenseDTO;
+import com.bdca.sense.manager.FaceEngineManager;
+import com.bdca.sense.service.FaceService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -98,9 +101,19 @@ public class SenseController {
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("bases64 required"));
 			}
 
+			// Options
+			if (sense.getOptions() != null && sense.getOptions().containsKey("mode")) {
+				String mode = String.valueOf(sense.getOptions().get("mode"));
+				if ("IMAGE".equals(mode.toUpperCase())) {
+					faceEngineManager.setFaceEngine(faceEngineManager.getFaceEngineImage());
+				} else if ("VIDEO".equals(mode.toUpperCase())) {
+					faceEngineManager.setFaceEngine(faceEngineManager.getFaceEngineVideo());
+				}
+			}
+
 			List<FaceInfo> faceInfoList = faceService.detectFaces(sbs);
 
-			// ↓ 在图像上绘制
+			// ↓ 在图像上绘制人脸框
 			BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
 			for (FaceInfo face : faceInfoList) {
 				int top = face.getRect().getTop() < 0 ? 0 : face.getRect().getTop();
@@ -117,8 +130,27 @@ public class SenseController {
 					image.setRGB(left, i, 0x0000FF);
 					image.setRGB(right, i, 0x0000FF);
 				}
+
+				// 绘制FaceId
+				if (face.getFaceId() >= 0) {
+					String s = String.valueOf(face.getFaceId());
+					// 获取画布的画笔
+
+					Graphics2D g2 = (Graphics2D) image.getGraphics();
+
+					// 开始绘图
+					FontRenderContext context = g2.getFontRenderContext();
+					Font font = new Font("黑体", Font.BOLD, 40);
+					Rectangle2D bounds = font.getStringBounds(s, context);
+					int x = left + 1;
+					int y = (int) (top + bounds.getHeight() / 4);
+					// 绘制字符串
+					g2.setPaint(Color.blue);
+					g2.drawString(s, x, y);
+					g2.dispose();
+				}
 			}
-			// ↑ 在图像上绘制
+			// ↑ 在图像上绘制人脸框
 
 			// ↓ 只保留在boxes范围内的的对象
 			List<FaceInfo> faceInfoListRazor = null;
@@ -132,6 +164,7 @@ public class SenseController {
 						break;
 					}
 
+					// ↓ 在图像上绘制boxes范围框
 					for (int i = box.getLeft(); i < box.getRight(); i++) {
 						image.setRGB(i, box.getTop(), 0xFF0000);
 						image.setRGB(i, box.getBottom(), 0xFF0000);
@@ -140,6 +173,7 @@ public class SenseController {
 						image.setRGB(box.getLeft(), i, 0xFF0000);
 						image.setRGB(box.getRight(), i, 0xFF0000);
 					}
+					// ↑ 在图像上绘制boxes范围框
 
 					Iterator<FaceInfo> iter = faceInfoList.iterator();
 					while (iter.hasNext()) {
@@ -165,6 +199,9 @@ public class SenseController {
 			result.put("size", faceInfoListRazor.size());
 			result.put("list", faceInfoListRazor);
 
+			result.put("age", faceService.getAge());
+			result.put("gender", faceService.getGender());
+
 			sense.setResult(result);
 
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -173,7 +210,7 @@ public class SenseController {
 
 			// BufferedImage image1 = ImageIO.read(new
 			// ByteArrayInputStream(Base64.decodeBase64(sense.getBases64())));
-			// ImageIO.write(image1, "JPG", new File("image.jpg"));
+			ImageIO.write(image, "JPG", new File("image.jpg"));
 
 			return sense;
 		} catch (Exception e) {

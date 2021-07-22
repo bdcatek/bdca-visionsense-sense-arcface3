@@ -1,6 +1,4 @@
-package com.bdca.face.service;
-
-import static com.arcsoft.face.toolkit.ImageFactory.getRGBData;
+package com.bdca.sense.service;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -9,11 +7,17 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.arcsoft.face.AgeInfo;
 import com.arcsoft.face.FaceFeature;
 import com.arcsoft.face.FaceInfo;
 import com.arcsoft.face.FaceSimilar;
+import com.arcsoft.face.FunctionConfiguration;
+import com.arcsoft.face.GenderInfo;
+import com.arcsoft.face.enums.DetectModel;
+import com.arcsoft.face.toolkit.ImageFactory;
 import com.arcsoft.face.toolkit.ImageInfo;
-import com.bdca.face.manager.FaceEngineManager;
+import com.arcsoft.face.toolkit.ImageInfoEx;
+import com.bdca.sense.manager.FaceEngineManager;
 
 @Service
 public class FaceService {
@@ -23,24 +27,48 @@ public class FaceService {
 
 	public List<FaceInfo> detectFaces(InputStream input) {
 		// 人脸检测
-		ImageInfo imageInfo = getRGBData(input);
-		List<FaceInfo> faceInfoList = new ArrayList<FaceInfo>();
-		int errorCode = faceEngine.getFaceEngine().detectFaces(imageInfo.getImageData(), imageInfo.getWidth(),
-				imageInfo.getHeight(), imageInfo.getImageFormat(), faceInfoList);
-		return faceInfoList;
+		ImageInfo imageInfo = ImageFactory.getRGBData(input);
+		return detectFaces(imageInfo);
 	}
 
 	public List<FaceInfo> detectFaces(ImageInfo imageInfo) {
 		// 人脸检测
 		List<FaceInfo> faceInfoList = new ArrayList<FaceInfo>();
-		int errorCode = faceEngine.getFaceEngine().detectFaces(imageInfo.getImageData(), imageInfo.getWidth(),
-				imageInfo.getHeight(), imageInfo.getImageFormat(), faceInfoList);
+		ImageInfoEx imageInfoEx = new ImageInfoEx();
+		imageInfoEx.setHeight(imageInfo.getHeight());
+		imageInfoEx.setWidth(imageInfo.getWidth());
+		imageInfoEx.setImageFormat(imageInfo.getImageFormat());
+		imageInfoEx.setImageDataPlanes(new byte[][] { imageInfo.getImageData() });
+		imageInfoEx.setImageStrides(new int[] { imageInfo.getWidth() * 3 });
+		int errorCode = faceEngine.getFaceEngine().detectFaces(imageInfoEx, DetectModel.ASF_DETECT_MODEL_RGB,
+				faceInfoList);
+
+		// 功能配置
+		FunctionConfiguration fun = new FunctionConfiguration();
+		fun.setSupportAge(true);
+		fun.setSupportGender(true);
+		errorCode = faceEngine.getFaceEngine().process(imageInfoEx, faceInfoList, fun);
+
 		return faceInfoList;
+	}
+
+	public List<AgeInfo> getAge() {
+		// 人脸检测
+		List<AgeInfo> ageInfoList = new ArrayList<AgeInfo>();
+		int errorCode = faceEngine.getFaceEngine().getAge(ageInfoList);
+		return ageInfoList;
+	}
+
+	public List<GenderInfo> getGender() {
+		// 人脸检测
+		List<GenderInfo> genderInfoList = new ArrayList<GenderInfo>();
+		int errorCode = faceEngine.getFaceEngine().getGender(genderInfoList);
+		return genderInfoList;
 	}
 
 	public List<FaceFeature> extractFaceFeature(InputStream input) {
 		// 特征提取
-		ImageInfo imageInfo = getRGBData(input);
+		ImageInfo imageInfo = ImageFactory.getRGBData(input);
 		List<FaceInfo> faceInfoList = detectFaces(imageInfo);
 		List<FaceFeature> faceFeatureList = new ArrayList<FaceFeature>();
 		for (FaceInfo faceInfo : faceInfoList) {
