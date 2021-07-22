@@ -3,7 +3,7 @@
 依赖虹软人脸识别SDK3.0 linux java
 
 ## java环境
-依赖环境jdk8+
+依赖环境jdk
 ```
 docker pull openjdk:11.0.11-jdk
 ```
@@ -15,7 +15,7 @@ java -jar bdca-visionsense-sense-arcface3-0.0.1-SNAPSHOT.jar --server.port=50000
 
 ## APIs
 
-API接口http://localhost:8080/swagger-ui.html
+API接口http://localhost:50000/swagger-ui.html
 
 1. [人脸识别接口](#人脸识别接口)
 

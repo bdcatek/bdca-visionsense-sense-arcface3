@@ -3,9 +3,11 @@ package com.bdca.face.controller;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -85,7 +87,6 @@ public class SenseController {
 	@ApiOperation(value = "感知接口", notes = "", response = SenseDTO.class)
 	public Object postSense(@RequestBody SenseDTO sense) throws IOException {
 		try {
-			Map<String, Object> results = new HashMap<String, Object>(1);
 			if (sense.getBases64() == null) {
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("bases64 required"));
 			}
@@ -102,13 +103,19 @@ public class SenseController {
 			// ↓ 在图像上绘制
 			BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
 			for (FaceInfo face : faceInfoList) {
-				for (int i = face.getRect().getLeft(); i < face.getRect().getRight(); i++) {
-					image.setRGB(i, face.getRect().getTop(), 0x0000FF);
-					image.setRGB(i, face.getRect().getBottom(), 0x0000FF);
+				int top = face.getRect().getTop() < 0 ? 0 : face.getRect().getTop();
+				int left = face.getRect().getLeft() < 0 ? 0 : face.getRect().getLeft();
+				int bottom = face.getRect().getBottom() >= image.getHeight() ? image.getHeight() - 1
+						: face.getRect().getBottom();
+				int right = face.getRect().getRight() >= image.getWidth() ? image.getWidth() - 1
+						: face.getRect().getRight();
+				for (int i = left; i < right; i++) {
+					image.setRGB(i, top, 0x0000FF);
+					image.setRGB(i, bottom, 0x0000FF);
 				}
-				for (int i = face.getRect().getTop(); i < face.getRect().getBottom(); i++) {
-					image.setRGB(face.getRect().getLeft(), i, 0x0000FF);
-					image.setRGB(face.getRect().getRight(), i, 0x0000FF);
+				for (int i = top; i < bottom; i++) {
+					image.setRGB(left, i, 0x0000FF);
+					image.setRGB(right, i, 0x0000FF);
 				}
 			}
 			// ↑ 在图像上绘制
@@ -159,15 +166,15 @@ public class SenseController {
 			result.put("list", faceInfoListRazor);
 
 			sense.setResult(result);
-			sense.setBases64(
-					Base64.encodeBase64String(((DataBufferByte) (image.getRaster().getDataBuffer())).getData()));
-			// results.put("result", result);
-			// results.put("base64",
-			// Base64.encodeBase64String(((DataBufferByte)
-			// (image.getRaster().getDataBuffer())).getData()));
 
-			// ImageIO.write(image, "JPG", new File("image.jpg"));
-			// return ((DataBufferByte) (image.getRaster().getDataBuffer())).getData();
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			ImageIO.write(image, "JPG", output);
+			sense.setBases64(Base64.encodeBase64String(output.toByteArray()));
+
+			// BufferedImage image1 = ImageIO.read(new
+			// ByteArrayInputStream(Base64.decodeBase64(sense.getBases64())));
+			// ImageIO.write(image1, "JPG", new File("image.jpg"));
+
 			return sense;
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage(e.getMessage()));

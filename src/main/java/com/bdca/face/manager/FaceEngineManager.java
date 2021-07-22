@@ -2,7 +2,6 @@ package com.bdca.face.manager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import javax.annotation.PostConstruct;
 
@@ -68,7 +67,7 @@ public class FaceEngineManager {
 		EngineConfiguration engineConfiguration = new EngineConfiguration();
 		engineConfiguration.setDetectMode(DetectMode.ASF_DETECT_MODE_IMAGE);
 		engineConfiguration.setDetectFaceOrientPriority(DetectOrient.ASF_OP_ALL_OUT);
-		engineConfiguration.setDetectFaceMaxNum(10);
+		engineConfiguration.setDetectFaceMaxNum(50);
 		engineConfiguration.setDetectFaceScaleVal(16);
 		// 功能配置
 		FunctionConfiguration functionConfiguration = new FunctionConfiguration();
