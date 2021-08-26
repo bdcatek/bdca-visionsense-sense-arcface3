@@ -8,7 +8,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -111,14 +110,16 @@ public class SenseController {
 				}
 			}
 
+			long start = System.currentTimeMillis();
 			List<FaceInfo> faceInfoList = faceService.detectFaces(sbs);
+			sense.setTaken((int) (System.currentTimeMillis() - start));
 
 			int maxFaceId = -1;
 			// ↓ 在图像上绘制人脸框
 			BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
 			for (FaceInfo face : faceInfoList) {
-				int top = face.getRect().getTop() < 0 ? 0 : face.getRect().getTop();
-				int left = face.getRect().getLeft() < 0 ? 0 : face.getRect().getLeft();
+				int top = face.getRect().getTop() <= 0 ? 1 : face.getRect().getTop();
+				int left = face.getRect().getLeft() <= 0 ? 1 : face.getRect().getLeft();
 				int bottom = face.getRect().getBottom() >= image.getHeight() ? image.getHeight() - 1
 						: face.getRect().getBottom();
 				int right = face.getRect().getRight() >= image.getWidth() ? image.getWidth() - 1
@@ -149,6 +150,7 @@ public class SenseController {
 					int x = left + 1;
 					int y = (int) (top + bounds.getHeight() / 4);
 					// 绘制字符串
+					g2.setFont(font);
 					g2.setPaint(Color.blue);
 					g2.drawString(s, x, y);
 					g2.dispose();
@@ -164,18 +166,22 @@ public class SenseController {
 					if (box == null) {
 						continue;
 					}
-					if (faceInfoList.size() == 0) {
-						break;
-					}
+					// if (faceInfoList.size() == 0) {
+					// break;
+					// }
 
 					// ↓ 在图像上绘制boxes范围框
-					for (int i = box.getLeft(); i < box.getRight(); i++) {
-						image.setRGB(i, box.getTop(), 0xFF0000);
-						image.setRGB(i, box.getBottom(), 0xFF0000);
+					int top = box.getTop() <= 0 ? 1 : box.getTop();
+					int left = box.getLeft() <= 0 ? 1 : box.getLeft();
+					int bottom = box.getBottom() >= image.getHeight() ? image.getHeight() - 1 : box.getBottom();
+					int right = box.getRight() >= image.getWidth() ? image.getWidth() - 1 : box.getRight();
+					for (int i = left; i < right; i++) {
+						image.setRGB(i, top, 0xFF0000);
+						image.setRGB(i, bottom, 0xFF0000);
 					}
-					for (int i = box.getTop(); i < box.getBottom(); i++) {
-						image.setRGB(box.getLeft(), i, 0xFF0000);
-						image.setRGB(box.getRight(), i, 0xFF0000);
+					for (int i = top; i < bottom; i++) {
+						image.setRGB(left, i, 0xFF0000);
+						image.setRGB(right, i, 0xFF0000);
 					}
 					// ↑ 在图像上绘制boxes范围框
 
